@@ -5,7 +5,6 @@ import (
 	"image"
 	"image/color"
 	"image/jpeg"
-	"io/ioutil"
 	"log"
 	"os"
 	"regexp"
@@ -28,7 +27,7 @@ func main() {
 func Archivo() []string {
 	var x int = 0
 	var nombres []string
-	files, err := ioutil.ReadDir("./imgs")
+	files, err := os.ReadDir("./imgs")
 
 	if err != nil {
 		log.Fatal("Error al abrir el directorio!! ", err)
@@ -114,7 +113,6 @@ func CambiarA(dir, color string, width, height int, rgb [][]color.RGBA) {
 			rgb[j][i].R = R
 			rgb[j][i].B = B
 			rgb[j][i].G = G
-
 		}
 	}
 
