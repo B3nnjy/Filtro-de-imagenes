@@ -26,6 +26,7 @@ func main() {
 }
 
 func Archivo() []string {
+	var x int = 0
 	var nombres []string
 	files, err := ioutil.ReadDir("./imgs")
 
@@ -33,17 +34,21 @@ func Archivo() []string {
 		log.Fatal("Error al abrir el directorio!! ", err)
 	}
 
-	nombres = make([]string, len(files))
-	var x int = 0
-
 	for _, arch := range files {
 		if !arch.IsDir() {
-
-			nombres[x] = arch.Name()
 			x++
 		}
 	}
 
+	nombres = make([]string, x)
+	x = 0
+
+	for _, arch := range files {
+		if !arch.IsDir() {
+			nombres[x] = arch.Name()
+			x++
+		}
+	}
 	return nombres
 }
 
@@ -77,32 +82,71 @@ func CambiarImagen(dir string, wg *sync.WaitGroup) {
 		}
 	}
 
-	CambiarARojo(dir, width, height, rgb)
+	CambiarA(dir, "rojo", width, height, rgb)
+	CambiarA(dir, "azul", width, height, rgb)
+	CambiarA(dir, "verde", width, height, rgb)
 
 }
 
-func CambiarARojo(dir string, width, height int, rgb [][]color.RGBA) {
+func CambiarA(dir, color string, width, height int, rgb [][]color.RGBA) {
 	imagen := image.Rect(0, 0, width, height)
 	newImg := image.NewRGBA(imagen)
 
+	var R, G, B uint8
+
 	for i := imagen.Min.X; i < imagen.Max.X; i++ {
 		for j := imagen.Min.Y; j < imagen.Max.Y; j++ {
-			rgb[j][i].R = 255
+			R = rgb[j][i].R
+			G = rgb[j][i].G
+			B = rgb[j][i].B
+
+			switch color {
+			case "rojo":
+				rgb[j][i].R = 255
+			case "azul":
+				rgb[j][i].B = 255
+			case "verde":
+				rgb[j][i].G = 255
+			}
+
 			newImg.Set(i, j, rgb[j][i])
+
+			rgb[j][i].R = R
+			rgb[j][i].B = B
+			rgb[j][i].G = G
+
 		}
 	}
 
 	re := regexp.MustCompile(`\.`)
 	subCad := re.Split(dir, -1)
 
-	newFile, err := os.Create("./imgs/rojo/" + subCad[0] + "_Roja" + ".jpg")
-	if err != nil {
-		panic(err)
-	}
+	newFile := guardarImg(subCad[0], color)
 	defer newFile.Close()
 
-	err = jpeg.Encode(newFile, newImg, nil)
+	err := jpeg.Encode(newFile, newImg, nil)
 	if err != nil {
 		panic(err)
 	}
+}
+
+func guardarImg(img, color string) *os.File {
+	_, err := os.Stat("./imgs/" + color + "/")
+
+	if os.IsNotExist(err) {
+		err := os.Mkdir("./imgs/"+color, 0755)
+
+		if err != nil {
+			fmt.Println("Error al crear el directorio ./imgs/" + color)
+		} else {
+			fmt.Println("Se ha creado el directorio ./imgs/" + color)
+		}
+	}
+
+	newFile, err := os.Create("./imgs/" + color + "/" + img + "_" + color + ".jpg")
+	if err != nil {
+		panic(err)
+	}
+
+	return newFile
 }
