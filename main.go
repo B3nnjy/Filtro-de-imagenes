@@ -17,7 +17,7 @@ func main() {
 
 	for i := 0; i < len(imagenes); i++ {
 		wg.Add(1)
-		go CambiarImagen(imagenes[i], &wg)
+		go CambiarImagen(imagenes[i], &wg, i)
 	}
 
 	wg.Wait()
@@ -51,7 +51,7 @@ func Archivo() []string {
 	return nombres
 }
 
-func CambiarImagen(dir string, wg *sync.WaitGroup) {
+func CambiarImagen(dir string, wg *sync.WaitGroup, id int) {
 	defer wg.Done()
 	// Abre la imagen
 	file, err := os.Open("./imgs/" + dir)
@@ -85,6 +85,7 @@ func CambiarImagen(dir string, wg *sync.WaitGroup) {
 	CambiarA(dir, "azul", width, height, rgb)
 	CambiarA(dir, "verde", width, height, rgb)
 
+	fmt.Println("Hilo ", id, " finalizado")
 }
 
 func CambiarA(dir, color string, width, height int, rgb [][]color.RGBA) {
